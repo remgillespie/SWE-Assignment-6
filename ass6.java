@@ -1,4 +1,4 @@
-//Richard Gillespie, Nahom Ebssa, SWE 432 Assignment 5
+//Richard Gillespie, Nahom Ebssa, SWE 432 Assignment 6
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -50,7 +50,7 @@ public class RootPage extends HttpServlet {
               
               
               .append("            <form style=\"border:2px solid black;\" action=\"Assg5\" method=\"POST\">\r\n")
-              .append("<h1>Welcome to the Gillespie-Ebssa Logical Super Collider (SWE 432 Assignment 5). Use the options below to enter a logical predicate. Enter variable names, select the (NOT) checkbox if you wish to negate them, and choose an operator from the dropdown. </h1><br>")
+              .append("<h1>Welcome to the Gillespie-Ebssa Logical Super Collider With Data Persistence (SWE 432 Assignment 6).</h1>Use the options below to enter a logical predicate. Enter variable names, select the (NOT) checkbox if you wish to negate them, and choose an operator from the dropdown. You may also select a predicate which was previously used, and the supercollider will consider it once more.<br>")
 
               .append("                <input type=\"checkbox\" id=\"pnot\" name=\"pnot\" value=\"NOT\">")
               .append("<label for=\"pbutton\" >(NOT) </label>")
@@ -89,9 +89,9 @@ public class RootPage extends HttpServlet {
 			Scanner reader = new Scanner(s);
 			String line = reader.nextLine();
 			while (line != null) { // we will read lines from our file and put them in pastPredicates, to become part of the dropdown.
-				writer.append(".");
+				//writer.append(".");
 				temp = line.split(" ")[0] + " " + line.split(" ")[1] + " " + line.split(" ")[2] + " " + line.split(" ")[3];
-				writer.append("<! -- " + temp + " -->\n");
+				//writer.append("<! -- " + temp + " -->\n");
 				pastPredicates.add(temp);
 				line = reader.nextLine();
 			}
@@ -134,6 +134,8 @@ public class RootPage extends HttpServlet {
 		String temp;
 		
 		if ((request.getParameter("Saved") == null) || (request.getParameter("Saved").contentEquals("DEFAULT"))) { //if they haven't selected an old predicate to run again
+			temp = null;
+			
 			FileWriter s = new FileWriter("store.txt", true);
 	
 	        pname = request.getParameter("pname");
@@ -155,8 +157,7 @@ public class RootPage extends HttpServlet {
 	        	qnot = "!";
 	        }
 	        q = qnot + qname; // q is the second argument, possibly prefixed with a ! and possibly not present at all
-	        
-	        
+	        	        
 	        operator = getOperator(request.getParameter("operator")); // the code is more convenient if this is an integer instead of a string
 	        truthStyle = getTruthStyle(request.getParameter("truthiness")); // the code is more convenient if this is an integer
 	        
@@ -177,7 +178,6 @@ public class RootPage extends HttpServlet {
 				truthStyle = getTruthStyle(temps[3]);
 			}
 		}
-			
         
         response.setContentType("text/html");
         response.setCharacterEncoding("UTF-8");
@@ -198,8 +198,11 @@ public class RootPage extends HttpServlet {
         	if (operator == 0) { // if they didn't select an operator, just print the first argument
         		writer.append("<p>Your input: " + p + ".</p>");
         	} else { //otherwise print both arguments and the operator
-        		//temp = request.getParameter("Saved Predicates");
-        	    writer.append("<p>Your input: " + p + " " + request.getParameter("operator") + " " + q + ".</p>");
+        		if (temp == null) { // if this is a new predicate
+        			writer.append("<p>Your input: " + p + " " + request.getParameter("operator") + " " + q + ".</p>");
+        		} else { // if this is a saved predicate
+        			writer.append("<p>Your input: " + p + " " + temp.split(" ")[1] + " " + q + ".</p>");
+        		}
         	}
             writer.append(buildTable(p, operator, q, truthStyle));
             
@@ -208,23 +211,8 @@ public class RootPage extends HttpServlet {
         }
         writer.append("        </body>\r\n")
               .append("</html>\r\n");
-        
     }
-	
-	/*
-	private String buildTable(int operator, String p, String q, int truthStyle) { 
-		File s = new File("store.txt");
-		try { 
-			Scanner reader = new Scanner(s);
-			String ans = reader.nextLine();
-			reader.close();
-			return ans;
-		} catch (Exception e) {
-			return "Error: storage file cannot be read";
-		}
-	} */
-	
-	
+
 	private String buildTable(String p, int operator, String q, int truthStyle) {
 		String ans = new String();
 		
@@ -322,5 +310,4 @@ public class RootPage extends HttpServlet {
 		}
 		return -1; //shouldn't ever reach this but may as well have an error value
 	}
-
 }
